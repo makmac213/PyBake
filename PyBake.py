@@ -1,4 +1,4 @@
-import MySQLdb
+import MySQLdb, sys
 
 INDENT = "    "
 
@@ -85,7 +85,7 @@ class PyBake:
 
     def createModel(self):
         p.getTables()
-        print 
+        print 'from django.db import models\n'
         for table in self.tables:
             print 'class %s(models.Model):' % (table.title())
             for tableRow in self.getTableColumns(table):
@@ -110,7 +110,7 @@ class PyBake:
                         if tableRow[4] in ('0000-00-00 00:00:00', 'CURRENT_TIMESTAMP'):
                             opts = opts + 'auto_now_add=True,'                        
                         print '= models.DateTimeField(%s)' % opts
-                    elif tableRow[2] in ('int'):
+                    elif tableRow[2] in ('int', 'tinyint'):
                         print '= models.IntegerField()'
                     elif tableRow[2] in ('enum'):
                         # EnumField
@@ -128,6 +128,9 @@ class PyBake:
 
 
 if __name__ == "__main__":
-    p = PyBake('cq',hostname='localhost', user='root', password='pass123', engine='mysql')
-    p.connect()
-    p.createModel()
+    if len(sys.argv) != 2:
+        sys.exit('Usage: python PyBake.py database > model.py')
+    else:
+        p = PyBake(sys.argv[1],hostname='localhost', user='root', password='pass123', engine='mysql')
+        p.connect()
+        p.createModel()
